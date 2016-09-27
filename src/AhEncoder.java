@@ -56,6 +56,13 @@ public class AhEncoder {
 			root = new Node();
 			root.setIndex(indexCounter--);
 			encode(in);
+			
+			in = new FileInputStream("output");
+			indexCounter = 100;
+			lookup = new HashMap<Integer, Node>();
+			root = new Node();
+			root.setIndex(indexCounter--);
+			decode(in);
 //			Reader r = new InputStreamReader(in, "UTF-8");
 //			int c = in.read();
 //			while (c != -1) {
@@ -74,12 +81,37 @@ public class AhEncoder {
 
 	}
 	
+	public static void decode(FileInputStream in) throws IOException {
+		Node NYT = root;
+		FileOutputStream out = new FileOutputStream("result.huffman");
+		DataOutputStream dout = new DataOutputStream(out);
+		byte[] bs = {32};
+		int c;
+//		while((in.read(bs)) > 0) {
+//			for ( byte b : bs) {
+//				System.out.println(Byte.toString(b));
+//			}
+////			dout.writeUTF(Integer.toBinaryString(c));
+//		}
+
+		while ((c = in.read()) > 0) {
+//			String s = Integer.parseInt(c);
+			System.out.println(c);
+//			while(s.length() > 8) {
+//				System.out.println(s.substring(0, 8));
+//				s = s.substring(8);
+//			}
+		}
+	}
+	
 	public static void encode(FileInputStream in) throws IOException {
 		Node NYT = root;
 		FileOutputStream out = new FileOutputStream("output");
 		DataOutputStream dout = new DataOutputStream(out);
+//		FileOutputStream debugOut = new FileOutputStream("output.debug");
+		DataOutputStream debugOut = new DataOutputStream(new FileOutputStream("output.debug"));
 		int c;
-		
+		String writeBuffer = "";
 		while((c = in.read()) != -1) {
 			String code = "";
 			if (lookup.containsKey(c)) {
@@ -93,7 +125,8 @@ public class AhEncoder {
 			}
 			updateTree(lookup.get(c));
 			
-			
+			writeBuffer += code;
+			debugOut.writeUTF(code);
 			System.out.println(code + " ");
 //			dout.write(Integer.parseInt(code, 2));
 //			out.write(Byte.parseByte(code, 2));
@@ -102,14 +135,25 @@ public class AhEncoder {
 ////				out.write(Byte.parseByte(code.substring(5, code.length()), 2));
 //				code = code.substring(5, code.length());
 //			}
-			
-			dout.write(Integer.valueOf(code, 2));
-			System.out.println(Integer.valueOf(code, 2));
+			while (writeBuffer.length() > 8) {
+				String writeOut = writeBuffer.substring(0, 8);
+				writeBuffer = writeBuffer.substring(8);
+				dout.write(Integer.valueOf(writeOut));
+			}
+			dout.write(Integer.valueOf(writeBuffer));
+//			dout.write(Integer.valueOf(code, 2));
+//			System.out.println(Integer.valueOf(code, 2));
 //			out.write(Integer.parseInt(code, 2));
 
 
 //			updateWeight(NYT);
 //			out.flush();
+		}
+		
+		while(writeBuffer.length() > 8) {
+			String writeOut = writeBuffer.substring(0, 8);
+			writeBuffer = writeBuffer.substring(8);
+			dout.write(Byte.valueOf(writeOut));
 		}
 	}
 	
@@ -149,6 +193,7 @@ public class AhEncoder {
 	
 	public static String getUncompressed(int c) {
 		return Integer.toBinaryString(c);
+//		return String.valueOf(c);
 		//		byte[] bs = s.getBytes();
 //		StringBuilder binary = new StringBuilder();
 //		for (byte b : bs) {
