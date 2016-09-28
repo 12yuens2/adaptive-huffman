@@ -82,7 +82,9 @@ public class AhEncoder {
 	}
 	
 	public static void decode(FileInputStream in) throws IOException {
+		root = new Node();
 		Node NYT = root;
+		Node currentNode = root;
 		FileOutputStream out = new FileOutputStream("result.huffman");
 		DataOutputStream dout = new DataOutputStream(out);
 		byte[] bs = {32};
@@ -93,14 +95,51 @@ public class AhEncoder {
 //			}
 ////			dout.writeUTF(Integer.toBinaryString(c));
 //		}
+		char ch;
+		String readBuffer = "";
+		c = in.read();
+		readBuffer += String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
 
-		while ((c = in.read()) > 0) {
-//			String s = Integer.parseInt(c);
-			System.out.println(c);
-//			while(s.length() > 8) {
-//				System.out.println(s.substring(0, 8));
-//				s = s.substring(8);
-//			}
+		while (c > 0 || !readBuffer.equals("")) {
+//			readBuffer += String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
+			System.out.println(readBuffer + "  -dcode");
+			if (currentNode.getRight() == null && currentNode.getLeft() == null) {
+				System.out.println(buildCode(NYT));
+				if (currentNode == NYT) {
+					System.out.println((char)Integer.parseInt(readBuffer.substring(0, 8), 2));
+					ch = (char)Integer.parseInt(readBuffer.substring(0, 8), 2);
+					
+					//READ NEXT BIT
+					if ((c = in.read()) > 0) {
+					readBuffer += String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
+					}				
+					readBuffer = readBuffer.substring(8);		
+
+					
+				} else {
+					ch = (char) currentNode.getData();
+					System.out.println(ch + " =");
+				}
+				
+				
+				//update tree
+				if (lookup.containsKey(ch)) {
+					updateTree(lookup.get(ch));
+				} else {
+					NYT = insert(ch, NYT);
+				}
+				currentNode = root;
+				
+			} else {
+				String bit = readBuffer.substring(0, 1);
+				currentNode = (bit.equals("0")) ? currentNode.getLeft() : currentNode.getRight();
+				
+				//move to next bit
+				readBuffer = readBuffer.substring(1);
+				if ((c = in.read()) > 0) {
+				readBuffer += String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');}
+			}
+//			System.out.println(readBuffer.equals(""));
 		}
 	}
 	
@@ -120,14 +159,14 @@ public class AhEncoder {
 //				updateTree(symbolNode);
 			} else {
 				code += buildCode(NYT);
+				System.out.println(buildCode(NYT));
 				code += getUncompressed(c);
 				NYT = insert(c, NYT);
 			}
 			updateTree(lookup.get(c));
 			
 			writeBuffer += code;
-			debugOut.writeUTF(code);
-			System.out.println(code + " ");
+//			System.out.println(code + " ");
 //			dout.write(Integer.parseInt(code, 2));
 //			out.write(Byte.parseByte(code, 2));
 //			while (code.length() > 5) {
@@ -135,12 +174,21 @@ public class AhEncoder {
 ////				out.write(Byte.parseByte(code.substring(5, code.length()), 2));
 //				code = code.substring(5, code.length());
 //			}
-			while (writeBuffer.length() > 8) {
+			System.out.println(writeBuffer + " ==");
+			
+			while (writeBuffer.length() >= 8) {
 				String writeOut = writeBuffer.substring(0, 8);
 				writeBuffer = writeBuffer.substring(8);
-				dout.write(Integer.valueOf(writeOut));
+
+				dout.write((byte)Integer.parseInt(writeOut, 2));
 			}
-			dout.write(Integer.valueOf(writeBuffer));
+//			System.out.println(writeBuffer + "bug2");
+			//write rest of buffer then clear it
+//			System.out.println(writeBuffer + " asd");
+//			System.out.println(Integer.parseInt(writeBuffer, 2));
+//			dout.write(Integer.parseInt(writeBuffer, 2));
+//			writeBuffer = "";
+			
 //			dout.write(Integer.valueOf(code, 2));
 //			System.out.println(Integer.valueOf(code, 2));
 //			out.write(Integer.parseInt(code, 2));
@@ -153,8 +201,15 @@ public class AhEncoder {
 		while(writeBuffer.length() > 8) {
 			String writeOut = writeBuffer.substring(0, 8);
 			writeBuffer = writeBuffer.substring(8);
-			dout.write(Byte.valueOf(writeOut));
+			dout.write((byte)Integer.parseInt(writeOut, 2));
 		}
+		if (writeBuffer.length() > 0) {
+			while (writeBuffer.length() % 8 != 0) {
+				writeBuffer += "0";
+			}
+			dout.write((byte)Integer.parseInt(writeBuffer, 2));
+		}
+		
 	}
 	
 	public static String buildCode(Node node) {
@@ -192,7 +247,7 @@ public class AhEncoder {
 	}
 	
 	public static String getUncompressed(int c) {
-		return Integer.toBinaryString(c);
+		return String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
 //		return String.valueOf(c);
 		//		byte[] bs = s.getBytes();
 //		StringBuilder binary = new StringBuilder();
