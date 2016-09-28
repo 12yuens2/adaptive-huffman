@@ -1,1 +1,61 @@
-abcde
+%\documentclass{beamer}
+\documentclass[handout]{beamer}
+% Comment first line and uncomment second line, to avoid stepping
+% through text. This is suitable for viewing the presentation 
+% as 'handout'.
+
+|
+\usepackage{beamerthemesplit}
+
+% Warsaw is one of several beamer 'themes'; themes are names of cities.
+% Then more tuning of theme follows.
+\usetheme{Warsaw}
+\usefonttheme[onlysmall]{structurebold}
+\setbeamertemplate{background canvas}[vertical shading]%
+[bottom=red!10,top=blue!10]
+\setbeamertemplate{navigation symbols}{}
+\setbeamercovered{dynamic}
+
+% Other packages used here:
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage{pgf,pgfshade}
+\usepackage{amsmath,amssymb}
+\usepackage[latin1]{inputenc}
+\usepackage{colortbl}
+\usepackage[english]{babel}
+\usepackage{times}
+\usepackage{algorithmic}
+\usepackage{marvosym}
+\usepackage{listings}
+%\documentclass{beamer}
+\documentclass[handout]{beamer}
+% Comment first line and uncomment second line, to avoid stepping
+% through text. This is suitable for viewing the presentation 
+% as 'handout'.
+
+\usepackage{beamerthemesplit}
+
+% Warsaw is one of several beamer 'themes'; themes are names of cities.
+% Then more tuning of theme follows.
+\usetheme{Warsaw}
+\usefonttheme[onlysmall]{structurebold}
+\setbeamertemplate{background canvas}[vertical shading]%
+[bottom=red!10,top=blue!10]
+\setbeamertemplate{navigation symbols}{}
+\setbeamercovered{dynamic}
+
+% Other packages used here:
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage{pgf,pgfshade}
+\usepackage{amsmath,amssymb}
+\usepackage[latin1]{inputenc}
+\usepackage{colortbl}
+\usepackage[english]{babel}
+\usepackage{times}
+\usepackage{algorithmic}
+\usepackage{marvosym}
+\usepackage{listings}
+
+

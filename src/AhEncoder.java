@@ -51,7 +51,7 @@ public class AhEncoder {
 
 		try {
 			FileInputStream in = new FileInputStream("test.txt");
-			indexCounter = 100;
+			indexCounter = 1000;
 			lookup = new HashMap<Integer, Node>();
 			root = new Node();
 			root.setIndex(indexCounter--);
@@ -82,62 +82,57 @@ public class AhEncoder {
 	}
 	
 	public static void decode(FileInputStream in) throws IOException {
-		root = new Node();
 		Node NYT = root;
 		Node currentNode = root;
 		FileOutputStream out = new FileOutputStream("result.huffman");
-		DataOutputStream dout = new DataOutputStream(out);
-		byte[] bs = {32};
+		
 		int c;
-//		while((in.read(bs)) > 0) {
-//			for ( byte b : bs) {
-//				System.out.println(Byte.toString(b));
-//			}
-////			dout.writeUTF(Integer.toBinaryString(c));
-//		}
-		char ch;
+		int ch;
 		String readBuffer = "";
 		c = in.read();
-		readBuffer += String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
-
+		readBuffer += getUncompressed(c);
+		
 		while (c > 0 || !readBuffer.equals("")) {
 //			readBuffer += String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
-			System.out.println(readBuffer + "  -dcode");
+//			System.out.println(readBuffer + "  -dcode");
+			
+			//at a leaf node
 			if (currentNode.getRight() == null && currentNode.getLeft() == null) {
-				System.out.println(buildCode(NYT));
 				if (currentNode == NYT) {
-					System.out.println((char)Integer.parseInt(readBuffer.substring(0, 8), 2));
-					ch = (char)Integer.parseInt(readBuffer.substring(0, 8), 2);
+					
+					//read c as uncompressed 
+					out.write(Integer.parseInt(readBuffer.substring(0, 8), 2));
+					ch = Integer.parseInt(readBuffer.substring(0, 8), 2);
 					
 					//READ NEXT BIT
 					if ((c = in.read()) > 0) {
-					readBuffer += String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
-					}				
+						readBuffer += getUncompressed(c);
+					}
 					readBuffer = readBuffer.substring(8);		
-
 					
 				} else {
-					ch = (char) currentNode.getData();
-					System.out.println(ch + " =");
+					ch = currentNode.getData();
+					out.write(currentNode.getData());
 				}
 				
 				
 				//update tree
-				if (lookup.containsKey(ch)) {
-					updateTree(lookup.get(ch));
-				} else {
+				if (!lookup.containsKey(ch)) {
 					NYT = insert(ch, NYT);
 				}
+				updateTree(lookup.get(ch));
 				currentNode = root;
 				
 			} else {
+				//move 1 bit down the tree
 				String bit = readBuffer.substring(0, 1);
 				currentNode = (bit.equals("0")) ? currentNode.getLeft() : currentNode.getRight();
 				
 				//move to next bit
 				readBuffer = readBuffer.substring(1);
 				if ((c = in.read()) > 0) {
-				readBuffer += String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');}
+					readBuffer += String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
+				}
 			}
 //			System.out.println(readBuffer.equals(""));
 		}
@@ -146,11 +141,9 @@ public class AhEncoder {
 	public static void encode(FileInputStream in) throws IOException {
 		Node NYT = root;
 		FileOutputStream out = new FileOutputStream("output");
-		DataOutputStream dout = new DataOutputStream(out);
-//		FileOutputStream debugOut = new FileOutputStream("output.debug");
-		DataOutputStream debugOut = new DataOutputStream(new FileOutputStream("output.debug"));
 		int c;
 		String writeBuffer = "";
+		
 		while((c = in.read()) != -1) {
 			String code = "";
 			if (lookup.containsKey(c)) {
@@ -159,57 +152,32 @@ public class AhEncoder {
 //				updateTree(symbolNode);
 			} else {
 				code += buildCode(NYT);
-				System.out.println(buildCode(NYT));
 				code += getUncompressed(c);
 				NYT = insert(c, NYT);
 			}
 			updateTree(lookup.get(c));
-			
 			writeBuffer += code;
-//			System.out.println(code + " ");
-//			dout.write(Integer.parseInt(code, 2));
-//			out.write(Byte.parseByte(code, 2));
-//			while (code.length() > 5) {
-//				out.write(Byte.parseByte(code.substring(0, 5), 2));
-////				out.write(Byte.parseByte(code.substring(5, code.length()), 2));
-//				code = code.substring(5, code.length());
-//			}
-			System.out.println(writeBuffer + " ==");
-			
-			while (writeBuffer.length() >= 8) {
+
+//			System.out.println(writeBuffer + " -encode");
+			//write out in 8 bits
+			while(writeBuffer.length() >= 8) {
 				String writeOut = writeBuffer.substring(0, 8);
 				writeBuffer = writeBuffer.substring(8);
-
-				dout.write((byte)Integer.parseInt(writeOut, 2));
+				out.write((byte)Integer.parseInt(writeOut, 2));
 			}
-//			System.out.println(writeBuffer + "bug2");
-			//write rest of buffer then clear it
-//			System.out.println(writeBuffer + " asd");
-//			System.out.println(Integer.parseInt(writeBuffer, 2));
-//			dout.write(Integer.parseInt(writeBuffer, 2));
-//			writeBuffer = "";
 			
-//			dout.write(Integer.valueOf(code, 2));
-//			System.out.println(Integer.valueOf(code, 2));
-//			out.write(Integer.parseInt(code, 2));
-
-
-//			updateWeight(NYT);
-//			out.flush();
 		}
 		
-		while(writeBuffer.length() > 8) {
-			String writeOut = writeBuffer.substring(0, 8);
-			writeBuffer = writeBuffer.substring(8);
-			dout.write((byte)Integer.parseInt(writeOut, 2));
-		}
+
+		//write rest of buffer
 		if (writeBuffer.length() > 0) {
+			
+			//fill end with 0s
 			while (writeBuffer.length() % 8 != 0) {
 				writeBuffer += "0";
 			}
-			dout.write((byte)Integer.parseInt(writeBuffer, 2));
+			out.write((byte)Integer.parseInt(writeBuffer, 2));
 		}
-		
 	}
 	
 	public static String buildCode(Node node) {
@@ -218,9 +186,9 @@ public class AhEncoder {
 		//go up the tree from the symbol node
 		while(node.getParent() != null) {
 			if (node.getParent().getLeft() == node) {
-				code += "0";
+				code = "0" + code;
 			} else {
-				code += "1";
+				code = "1" + code;
 			}
 			node = node.getParent();
 		}
@@ -228,6 +196,8 @@ public class AhEncoder {
 	}
 	
 	public static void updateTree(Node node) {
+//		System.out.println();
+//		traverse(root);
 //		int currentWeight = node.getWeight();
 		if (node == root) {
 			node.incrementWeight();
@@ -405,7 +375,7 @@ public class AhEncoder {
 	}
 	
 /*
- * Functions to traverse tree
+ * Function to traverse tree and print node details
  */
 	public static void traverse(Node node) {
 		if (node == null) {
