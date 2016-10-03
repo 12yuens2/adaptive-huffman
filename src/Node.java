@@ -20,24 +20,13 @@ public class Node {
 	 * Constructor to be called for first occurrence of a symbol
 	 */
 	public Node(int data, int index, Node parent) {
-		this.parent = parent;
-		this.index = index;
 		this.data = data;
+		this.index = index;
+		this.parent = parent;
 		
 //		//weight is one because first occurrence of symbol
 //		this.weight = 1;
 	}
-	
-//	public Node(Node parent, Node l, Node r, int weight, int index, int data, boolean NYT) {
-//		this.parent = parent;
-//		this.left = l;
-//		this.right = r;
-//		this.weight = weight;
-//		this.index = index;
-//		this.data = data;
-//		this.NYT = NYT;
-//	}
-	
 
 
 	public boolean isRoot() {
