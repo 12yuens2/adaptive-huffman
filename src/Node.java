@@ -24,8 +24,8 @@ public class Node {
 		this.index = index;
 		this.data = data;
 		
-		//weight is one because first occurrence of symbol
-		this.weight = 1;
+//		//weight is one because first occurrence of symbol
+//		this.weight = 1;
 	}
 	
 //	public Node(Node parent, Node l, Node r, int weight, int index, int data, boolean NYT) {
@@ -45,6 +45,7 @@ public class Node {
 	}
 
 	public void updateWeight() {
+		//update weight based on children weight
 		if (data < 0) {
 			int l = 0, r = 0;
 			if (left != null) {

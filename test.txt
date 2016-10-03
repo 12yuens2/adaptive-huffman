@@ -1,61 +1,9 @@
-%\documentclass{beamer}
-\documentclass[handout]{beamer}
-% Comment first line and uncomment second line, to avoid stepping
-% through text. This is suitable for viewing the presentation 
-% as 'handout'.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce posuere massa eget lorem condimentum, eget rhoncus eros convallis. Integer finibus enim eu ante mattis, sit amet egestas velit ullamcorper. Fusce volutpat volutpat dui eget feugiat. Duis quam nibh, cursus quis nunc id, ultricies laoreet augue. Mauris feugiat dictum semper. Fusce metus leo, sollicitudin a lectus a, fermentum vehicula odio. Etiam non nisi bibendum, condimentum orci quis, posuere lorem. In lacinia nunc vitae felis aliquet, vitae varius massa dictum. In tincidunt porta dui et lobortis. Vestibulum iaculis dictum mattis. Nulla dolor metus, lobortis sit amet sem sit amet, vulputate maximus nunc. Proin eget mi iaculis justo consectetur aliquam eget et leo.
 
-|
-\usepackage{beamerthemesplit}
+Integer laoreet aliquam velit, id porta tellus interdum rhoncus. Vivamus tempus ante vitae ante volutpat semper. Etiam est nibh, maximus non libero ac, facilisis rutrum libero. Cras quis justo orci. Vivamus congue placerat diam, ut venenatis massa porttitor ut. Pellentesque viverra turpis quis est mattis mollis. Suspendisse efficitur mollis odio eget rutrum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus suscipit tincidunt iaculis. Aliqu\    am faucibus ac velit vel cursus. Curabitur luctus erat a velit tincidunt, eget viverra dui posuere. Suspendisse venenatis tellus ac mi auctor, quis interdum arcu dignissim. Fusce porttitor dapibus turpis, fermentum facilisis nisl bibendum eget. In hac habitasse platea dictumst. Nunc diam eros, sagittis in vehicula quis, congue placerat leo. Pellentesque mattis nisl et tortor fringilla rutrum.
 
-% Warsaw is one of several beamer 'themes'; themes are names of cities.
-% Then more tuning of theme follows.
-\usetheme{Warsaw}
-\usefonttheme[onlysmall]{structurebold}
-\setbeamertemplate{background canvas}[vertical shading]%
-[bottom=red!10,top=blue!10]
-\setbeamertemplate{navigation symbols}{}
-\setbeamercovered{dynamic}
+Integer laoreet aliquam velit, id porta tellus interdum rhoncus. Vivamus tempus ante vitae ante volutpat semper. Etiam est nibh, maximus non libero ac, facilisis rutrum libero. Cras quis justo orci. Vivamus congue placerat diam, ut venenatis massa porttitor ut. Pellentesque viverra turpis quis est mattis mollis. Suspendisse efficitur mollis odio eget rutrum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus suscipit tincidunt iaculis. Aliqu\    am faucibus ac velit vel cursus. Curabitur luctus erat a velit tincidunt, eget viverra dui posuere. Suspendisse venenatis tellus ac mi auctor, quis interdum arcu dignissim. Fusce porttitor dapibus turpis, fermentum facilisis nisl bibendum eget. In hac habitasse platea dictumst. Nunc diam eros, sagittis in vehicula quis, congue placerat leo. Pellentesque mattis nisl et tortor fringilla rutrum.
 
-% Other packages used here:
-\usepackage{tikz}
-\usetikzlibrary{positioning}
-\usepackage{pgf,pgfshade}
-\usepackage{amsmath,amssymb}
-\usepackage[latin1]{inputenc}
-\usepackage{colortbl}
-\usepackage[english]{babel}
-\usepackage{times}
-\usepackage{algorithmic}
-\usepackage{marvosym}
-\usepackage{listings}
-%\documentclass{beamer}
-\documentclass[handout]{beamer}
-% Comment first line and uncomment second line, to avoid stepping
-% through text. This is suitable for viewing the presentation 
-% as 'handout'.
+Proin tincidunt massa vel mauris accumsan rhoncus. Aenean ullamcorper urna et mauris tincidunt condimentum. Praesent nec enim placerat, venenatis nisi nec, tristique dui. Curabitur volutpat tortor diam, id efficitur ante rhoncus vel. Pellentesque convallis tristique magna nec varius. Nulla in hendrerit leo. Nam dignissim urna mi, et facilisis lacus lobortis non. Cras eleifend risus mauris, non pharetra diam varius vel. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nam viverra neque in porttitor fringilla. Aenean nulla lectus, molestie ac vestibulum in, feugiat a tortor. Nullam urna sem, pretium quis lacus auctor, malesuada volutpat neque. Donec mollis placerat facilisis.
 
-\usepackage{beamerthemesplit}
-
-% Warsaw is one of several beamer 'themes'; themes are names of cities.
-% Then more tuning of theme follows.
-\usetheme{Warsaw}
-\usefonttheme[onlysmall]{structurebold}
-\setbeamertemplate{background canvas}[vertical shading]%
-[bottom=red!10,top=blue!10]
-\setbeamertemplate{navigation symbols}{}
-\setbeamercovered{dynamic}
-
-% Other packages used here:
-\usepackage{tikz}
-\usetikzlibrary{positioning}
-\usepackage{pgf,pgfshade}
-\usepackage{amsmath,amssymb}
-\usepackage[latin1]{inputenc}
-\usepackage{colortbl}
-\usepackage[english]{babel}
-\usepackage{times}
-\usepackage{algorithmic}
-\usepackage{marvosym}
-\usepackage{listings}
-
-
+Aenean massa purus, faucibus quis mi at, pellentesque posuere dui. Mauris faucibus quis ipsum a egestas. In euismod diam vitae justo pellentesque, in pulvinar ex faucibus. Praesent lacinia elit a ullamcorper vehicula. Suspendisse iaculis quam et turpis sagittis, eu tristique nunc lacinia. Pellentesque nec arcu feugiat, placerat leo id, pretium massa. Cras convallis risus vel odio maximus molestie. Pellentesque vel quam aliquam, porttitor diam quis, sodales nunc. Curabitur elementum lectus ac diam interdum, vel mattis mauris euismod. Donec nec gravida lectus, a feugiat eros. Quisque rutrum ornare sem. Nam sit amet viverra libero. Nam ut placerat ligula. Nunc ut augue mattis, luctus sapien nec, efficitur metus.

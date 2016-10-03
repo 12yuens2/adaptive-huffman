@@ -1,15 +1,9 @@
-import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.Scanner;
 
 
 public class AhEncoder {
@@ -17,38 +11,8 @@ public class AhEncoder {
 	private static HashMap<Integer, Node> lookup;
 	public static int indexCounter = 0;
 	public static Node root;
-	public static Node[] indexLookup;
 
 	public static void main(String[] args) {
-//		
-//		Scanner scanner = new Scanner(System.in);
-//		String toEncode;
-//		
-//		toEncode = scanner.next();
-//		String toEncode = "aardv";
-
-//		Node a = new Node("a", 0, null);
-//		Node b = new Node("b", 0, a);
-//		Node c = new Node("c", 0, a);
-//		
-//		a.setLeft(b);
-//		a.setRight(c);
-//		
-//		Node d = new Node("d", 0, b);
-//		Node e = new Node("e", 0, b);
-//		b.setLeft(d);
-//		b.setRight(e);
-//		
-//		Node f = new Node("f", 0, c);
-//		c.setLeft(f);
-//		
-//		traverse(a);
-//		swap(c, d);
-//		traverse(a);
-		
-		
-//		Node NYT;
-
 		try {
 			FileInputStream in = new FileInputStream("test.txt");
 			indexCounter = 1000;
@@ -56,23 +20,20 @@ public class AhEncoder {
 			root = new Node();
 			root.setIndex(indexCounter--);
 			encode(in);
+			System.err.println(root.getWeight());
+			System.err.println(lookup.size());
 			
 			in = new FileInputStream("output");
-			indexCounter = 100;
+			indexCounter = 1000;
 			lookup = new HashMap<Integer, Node>();
 			root = new Node();
 			root.setIndex(indexCounter--);
 			decode(in);
-//			Reader r = new InputStreamReader(in, "UTF-8");
-//			int c = in.read();
-//			while (c != -1) {
-//				System.out.println(c + " ");
-//				c = in.read();
-//			}
-
+			System.err.println(root.getWeight());
+			System.err.println(lookup.size());
 			
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			System.err.println("File not found.");
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -85,7 +46,7 @@ public class AhEncoder {
 		Node NYT = root;
 		Node currentNode = root;
 		FileOutputStream out = new FileOutputStream("result.huffman");
-		
+		int count = 0;
 		int c;
 		int ch;
 		String readBuffer = "";
@@ -100,25 +61,22 @@ public class AhEncoder {
 			if (currentNode.getRight() == null && currentNode.getLeft() == null) {
 				if (currentNode == NYT) {
 					
-					//read c as uncompressed 
+					//read c as uncompressed
 					out.write(Integer.parseInt(readBuffer.substring(0, 8), 2));
 					ch = Integer.parseInt(readBuffer.substring(0, 8), 2);
+
+					//insert the new symbol into the tree
+					NYT = insert(ch, NYT);
 					
 					//READ NEXT BIT
 					if ((c = in.read()) > 0) {
 						readBuffer += getUncompressed(c);
 					}
-					readBuffer = readBuffer.substring(8);		
+					readBuffer = readBuffer.substring(8);
 					
 				} else {
 					ch = currentNode.getData();
 					out.write(currentNode.getData());
-				}
-				
-				
-				//update tree
-				if (!lookup.containsKey(ch)) {
-					NYT = insert(ch, NYT);
 				}
 				updateTree(lookup.get(ch));
 				currentNode = root;
@@ -128,13 +86,12 @@ public class AhEncoder {
 				String bit = readBuffer.substring(0, 1);
 				currentNode = (bit.equals("0")) ? currentNode.getLeft() : currentNode.getRight();
 				
-				//move to next bit
+				//move buffer to next bit
 				readBuffer = readBuffer.substring(1);
 				if ((c = in.read()) > 0) {
 					readBuffer += String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
 				}
 			}
-//			System.out.println(readBuffer.equals(""));
 		}
 	}
 	
@@ -147,9 +104,7 @@ public class AhEncoder {
 		while((c = in.read()) != -1) {
 			String code = "";
 			if (lookup.containsKey(c)) {
-				Node symbolNode = lookup.get(c);
-				code += buildCode(symbolNode);
-//				updateTree(symbolNode);
+				code += buildCode(lookup.get(c));
 			} else {
 				code += buildCode(NYT);
 				code += getUncompressed(c);
@@ -203,17 +158,12 @@ public class AhEncoder {
 			node.incrementWeight();
 		} else {
 			Node highestNode = getHighestNode(getNodeBlock(node.getWeight()));
-			if (highestNode != null && highestNode != node.getParent() && highestNode != node) {
+			if (highestNode != null && highestNode != node.getParent() && highestNode != node && node != highestNode.getParent()) {
 				swap(node, highestNode);
 			}
 			node.incrementWeight();
 			updateTree(node.getParent());
 		}
-//		Node highestNode = getHighestNode(getNodeBlock(node.getWeight()));
-//		if (node != highestNode.getParent() && highestNode != node.getParent() && node != highestNode && highestNode != null && highestNode != root) {
-//			swap(node, highestNode);
-//		}
-//		node.incrementWeight();
 	}
 	
 	public static String getUncompressed(int c) {
@@ -240,43 +190,16 @@ public class AhEncoder {
 	public static Node insert(int c, Node NYT) {
 		//new symbol node
 		Node newNode = new Node(c, indexCounter--, NYT);
-		newNode.setParent(NYT);
 		lookup.put(c, newNode);
-		NYT.setRight(newNode);
-		
+
 		//new NYT node
-		Node newNYT = new Node();
+		Node newNYT = new Node(-1, indexCounter--, NYT);
+		
 		NYT.setLeft(newNYT);
+		NYT.setRight(newNode);
 		NYT.setWeight(1);
-		newNYT.setParent(NYT);
-		newNYT.setIndex(indexCounter--);
 		
 		return newNYT;
-	}
-	
-	public static void updateWeight(Node node) {	
-		int tempWeight = node.getWeight();
-		node.updateWeight();
-		
-		//if weight is incremented on updateWeight()
-		if (node.getWeight() > tempWeight) {
-			//reset weight back to previous weight and swap nodes
-			node.setWeight(tempWeight);
-			Node highestNode = getHighestNode(getNodeBlock(tempWeight));
-			if (highestNode != node.getParent() && node != highestNode && highestNode != null && node != highestNode.getParent()&& highestNode != root && node != root) {
-				swap(node, highestNode);			
-			} 
-			
-			//update weight after swap
-			node.updateWeight();
-		}
-		
-		//recursive call to update weight up the tree
-		if (node.getParent() != null) {
-			updateWeight(node.getParent());
-		}
-
-		
 	}
 	
 	public static void swap(Node a, Node b) {
