@@ -6,10 +6,9 @@ public class Node {
 	private int weight;
 	private int index;
 	private int data;
-	private boolean NYT;
 	
 	/**
-	 * Blank constructor
+	 * Blank constructor for internal nodes
 	 */
 	public Node() {
 		weight = 0;
@@ -17,45 +16,28 @@ public class Node {
 	}
 	
 	/**
-	 * Constructor to be called for first occurrence of a symbol
+	 * 
 	 */
 	public Node(int data, int index, Node parent) {
 		this.data = data;
 		this.index = index;
 		this.parent = parent;
-		
-//		//weight is one because first occurrence of symbol
-//		this.weight = 1;
-	}
-
-
-	public boolean isRoot() {
-		return parent == null;
-	}
-
-	public void updateWeight() {
-		//update weight based on children weight
-		if (data < 0) {
-			int l = 0, r = 0;
-			if (left != null) {
-				l = left.getWeight();
-			} 
-			if (right != null) {
-				r = right.getWeight();
-			}
-			weight = l + r;
-		}
 	}
 	
 	public void incrementWeight() {
 		this.weight++;
 	}
 	
+	/**
+	 * Print node attributes, used mostly for debugging.
+	 */
 	public void printDetails() {
 		System.out.print(data + "|w:" + weight + "|n:" + index +" , ");
 	}
 	
-/* getters and setters */
+/* 
+ * Getters and Setters 
+ */
 	
 	public Node getParent() {
 		return parent;
@@ -86,12 +68,6 @@ public class Node {
 	}
 	public void setIndex(int index) {
 		this.index = index;
-	}
-	public boolean isNYT() {
-		return NYT;
-	}
-	public void setNYT(boolean NYT) {
-		this.NYT = NYT;
 	}
 	public int getData() {
 		return data;

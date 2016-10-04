@@ -1,1 +1,72 @@
-\part{Design}
+\documentclass{article}
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3,
+  xleftmargin=.2\textwidth,
+  xrightmargin=.2\textwidth
+}
+
+\newcommand{\tablerow}[4]{ #1 & #2 & #3 & #4\\}
+
+\title{CS3302 Compression Practical}
+\date{2016-10-07}
+\author{Sizhe Yuen}
+
+
+\begin{document}
+
+\pagenumbering{gobble}
+\maketitle
+
+\newpage
+\pagenumbering{arabic}
+
+\section{Introduction}
+In this practical we were asked to implement the Adaptive Huffman algorithm to encode and decode files. My implementation was able to construct the code tree incrementally, swapping nodes when necessary to maintain the sibling property and use the code tree to both encode and decode text and image files. 
+\paragraph{Lorem Ipsum}
+dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+\section{Design}
+\subsection{Lookup table}
+In my \texttt{AHEncoder} class, I have the field: 
+\begin{lstlisting}
+private HashMap<Integer, Node> lookup;
+\end{lstlisting}
+This field is use to store a direct index to every Node in the Huffman tree. The integer is the integer representation of the symbol that was read from the file. 
+
+\section{Outcome}	
+\subsection{Text files}
+
+\subsection{Image files}
+For image files, I have found that the size of the output from the encoding depends on the image file type. For example, when I try to encode \texttt{.jpg} and \texttt{.png} files, the file size for the output from the encoding is larger than the original image itself. However, when encoding a \texttt{.bmp} image, the encoding works very well.
+
+\begin{center}
+\begin{tabular}{ |c|c|c|c| }
+\hline
+Original size & Encoded size & Compression & File extension \\
+\hline
+\tablerow{23538}{23884}{101\%}{\texttt{.png}}
+\tablerow{1523}{1632}{107\%}{\texttt{.jpg}}
+\tablerow{32886}{5741}{17.5\%}{\texttt{.bmp}}
+\hline
+\end{tabular}
+\end{center}
+\end{document}

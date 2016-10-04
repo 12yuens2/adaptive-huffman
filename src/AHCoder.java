@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 
 public class AHCoder {
@@ -14,6 +15,7 @@ public class AHCoder {
 	private HashMap<Integer, Node> lookup;
 	private Node root;
 	
+	private static int MAX_BUFFER_SIZE = 32;
 	
 	public AHCoder(String inputFile, String outputFile, int indexCounter) throws IOException {
 		this.in = new FileInputStream(inputFile);
@@ -44,19 +46,18 @@ public class AHCoder {
 
 //			System.out.println(writeBuffer + " -encode");
 			//write out in 8 bits
-//			while(writeBuffer.length() >= 8) {
-//				String writeOut = writeBuffer.substring(0, 8);
-//				writeBuffer = writeBuffer.substring(8);
-//				out.write((byte)Integer.parseInt(writeOut, 2));
-//			}
+			while(writeBuffer.length() >= 8) {
+				String writeOut = writeBuffer.substring(0, 8);
+				writeBuffer = writeBuffer.substring(8);
+				out.write((byte)Integer.parseInt(writeOut, 2));
+			}
 		}
-//		System.out.println(writeBuffer);
 		
-		while(writeBuffer.length() >= 8) {
-			String writeOut = writeBuffer.substring(0, 8);
-			writeBuffer = writeBuffer.substring(8);
-			out.write(Integer.parseInt(writeOut, 2));
-		}
+//		while(writeBuffer.length() >= 8) {
+//			String writeOut = writeBuffer.substring(0, 8);
+//			writeBuffer = writeBuffer.substring(8);
+//			out.write(Integer.parseInt(writeOut, 2));
+//		}
 		
 		//write rest of buffer
 		if (writeBuffer.length() > 0) {
@@ -95,7 +96,7 @@ public class AHCoder {
 					NYT = insert(ch, NYT);
 					
 					//READ NEXT BIT
-					if ((c = in.read()) > 0) {
+					if (readBuffer.length() < MAX_BUFFER_SIZE && (c = in.read()) != -1) {
 						readBuffer += getUncompressed(c);
 					}
 					readBuffer = readBuffer.substring(8);
@@ -117,13 +118,17 @@ public class AHCoder {
 				readBuffer = readBuffer.substring(1);
 				
 				//read more into buffer
-				if ((c = in.read()) != -1) {
+				if (readBuffer.length() < MAX_BUFFER_SIZE && (c = in.read()) != -1) {
 					readBuffer += String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
 				}
 			}
 		}
 	}
 	
+	/**
+	 * Starting from the given node, this function builds the code as it moves up the tree
+	 * Returns the binary code in String format
+	 */
 	private String buildCode(Node node) {
 		String code = "";
 		
@@ -139,10 +144,11 @@ public class AHCoder {
 		return code;
 	}
 	
+	/**
+	 * Recursive function that increments the weight of the given node, then calls itself with the parent until it reaches the root node.
+	 * The function also swaps nodes if necessary.
+	 */
 	private void updateTree(Node node) {
-//		System.out.println();
-//		traverse(root);
-//		int currentWeight = node.getWeight();
 		if (node == root) {
 			node.incrementWeight();
 		} else {
@@ -155,6 +161,9 @@ public class AHCoder {
 		}
 	}
 	
+	/**
+	 * Returns the binary representation of 'c' in a String format.
+	 */
 	private static String getUncompressed(int c) {
 		return String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
 	}
@@ -232,8 +241,9 @@ public class AHCoder {
 		a.setIndex(b.getIndex());
 	}
 	
-	
-	
+/*
+ * Helper functions to get the highest node block.	
+ */
 	/**
 	 * Returns an array of all nodes with given weight from root
 	 */
@@ -272,8 +282,12 @@ public class AHCoder {
 	}
 	
 /*
- * Function to traverse tree and print node details
+ * Print function	
  */
+	/**
+	 * Function to traverse tree and print node details.
+	 * Mostly used for viewing the tree for debugging.
+	 */
 	public void traverse(Node node) {
 		if (node == null) {
 			return;
