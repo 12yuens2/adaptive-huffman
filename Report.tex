@@ -1,6 +1,8 @@
 \documentclass{article}
 \usepackage{listings}
 \usepackage{color}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -25,6 +27,7 @@
 }
 
 \newcommand{\tablerow}[4]{ #1 & #2 & #3 & #4\\}
+\newcommand{\n}[0]{\newline}
 
 \title{CS3302 Compression Practical}
 \date{2016-10-07}
@@ -40,9 +43,7 @@
 \pagenumbering{arabic}
 
 \section{Introduction}
-In this practical we were asked to implement the Adaptive Huffman algorithm to encode and decode files. My implementation was able to construct the code tree incrementally, swapping nodes when necessary to maintain the sibling property and use the code tree to both encode and decode text and image files. 
-\paragraph{Lorem Ipsum}
-dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+In this practical we were asked to implement the Adaptive Huffman algorithm to encode and decode files. My implementation was able to construct the code tree incrementally, swapping nodes when necessary to maintain the sibling property and use the code tree to both encode and decode text and other file formats. 
 
 \section{Design}
 \subsection{Lookup table}
@@ -51,9 +52,55 @@ In my \texttt{AHEncoder} class, I have the field:
 private HashMap<Integer, Node> lookup;
 \end{lstlisting}
 This field is use to store a direct index to every Node in the Huffman tree. The integer is the integer representation of the symbol that was read from the file. 
-
+\subsection{Encode}
+In my encode function, I read each character from the input stream and check the lookup table. If the lookup table already contains that character, then from the lookup table I can get the node in the tree and build the code up traversing up through the parents. Otherwise I send the NYT code and the code for the uncompressed character, then insert the new node into the tree. The basic algorithm was as follows:
+\begin{algorithm}
+\begin{algorithmic}
+\While {$c\not= EOF$}
+    \If {$c$ in lookup table} 
+    	\State getCode($c$)
+    \Else
+    	\State getCode($NYT$)
+    	\State getUncompressed($c$)
+    	\State insert($c$)
+    \EndIf
+    \State updateTree($c$)
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+\n I found the encoding process to be quite simple to understand and most of the problems I encountered when trying to implement the algorithm was to do with the code tree and how to swap two nodes. 
+\subsection{Swapping nodes}
+My condition to check whether nodes should be swapped is simple. Whenever a node's weight is about to be incremented, I traverse the tree to find the node with the highest index and the same weight. If the two nodes are not the same and are not parent/child of each other, then they are swapped. To actually swap the nodes, instead of swapping just the subtrees and the labels of the nodes, I chose to swap the nodes themselves and their parents. This was because I found it confusing if the subtrees and labels were swapped, the pointers to the nodes still stayed the same so I would update the wrong nodes. 
+\subsection{Decode}
+The algorithm for decoding was essentially the same for encoding, except for building the code. What I do is keep reading the next bit until I reach a leaf node, going either left or right depending on whether I get a 0 or 1 respectively. Once I do we check if the node we are on is the NYT node or not. If it is, read the next 8 bits as uncompressed, otherwise we can output the data of the current leaf node. 
+\begin{algorithm}
+\begin{algorithmic}
+\While {$b\not= EOF$}
+	\If {$currentNode$ is a leaf}
+    	\If {$currentNode == NYT$} 
+    		\State $c$ = getUncompressed(next 8 bits)
+    		\State insert($c$)
+    		\State read next 8 bits
+    	\Else
+    		\State getCode($currentNode$)
+    	\EndIf
+    	   \State $currentNode = root$
+    	   \State updateTree($c$)
+    \Else
+    	\If {$b==0$}
+    		\State $currentNode = currentNode.left;$
+    	\Else
+    		\State $currentNode = currentNode.right;$
+    	\EndIf
+    	\State read next 1 bit
+    \EndIf
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+\n This algorithm is good in that we are always traversing down the tree as we read each bit, so we don't have to go back or do any extra traversal except when updating the tree.
 \section{Outcome}	
 \subsection{Text files}
+In general, text files compress easily 
 
 \subsection{Image files}
 For image files, I have found that the size of the output from the encoding depends on the image file type. For example, when I try to encode \texttt{.jpg} and \texttt{.png} files, the file size for the output from the encoding is larger than the original image itself. However, when encoding a \texttt{.bmp} image, the encoding works very well.
@@ -61,7 +108,7 @@ For image files, I have found that the size of the output from the encoding depe
 \begin{center}
 \begin{tabular}{ |c|c|c|c| }
 \hline
-Original size & Encoded size & Compression & File extension \\
+Original size & Encoded size & Compression & File format \\
 \hline
 \tablerow{23538}{23884}{101\%}{\texttt{.png}}
 \tablerow{1523}{1632}{107\%}{\texttt{.jpg}}
@@ -69,4 +116,32 @@ Original size & Encoded size & Compression & File extension \\
 \hline
 \end{tabular}
 \end{center}
+This would be because image formats like \texttt{.jpg} already do their own compression and so my Adaptive Huffman algorithm is not able to compress it further, while \texttt{.bmp} files are uncompressed. 
+
+\subsection{Other file formats}
+Similar to image files, the compression of other files depends on their file format. 
+\begin{center}
+\begin{tabular}{ |c|c|c|c| }
+\hline
+Original size & Encoded size & Compression & File format \\
+\hline
+\tablerow{119520}{119939}{100.4\%}{\texttt{.pdf}}
+\tablerow{759542}{750048}{98.7\%}{\texttt{.pptx}}
+\tablerow{787306}{657929}{83.6\%}{\texttt{.wav}}
+\hline
+\end{tabular}
+\end{center}
+
+\section{Evaluation}
+\subsection{Getting highest index node in block}
+To get the highest index node, I currently have to traverse the entire code tree, adding all nodes with the same weight to a list, then checking through that list to find the node with the highest index. This can be very slow if the tree becomes very big. \n A solution would be to keep a \texttt{HasMap} similar to the lookup table I already have for the Node lookups for every weight block. This would involve book keeping on every update on the tree to both add a node when the 
+\subsection{Last byte of encoding}
+Because this implementation is written in Java, when writing out the bits to the compressed file, the minimum amount that can be written is a byte (8 bits). This was a problem for writing and reading because we want to work in bits, but I got around this problem using a String as a buffer. The problem was when we get to the final few bits, if they don't make up 8 bits, I still need a full byte before writing out to the file, so I fill the rest of the the missing bits with 0s. 
+\begin{lstlisting}
+//fill end with 0s
+while (writeBuffer.length() % 8 != 0) {
+	writeBuffer += "0";
+}
+\end{lstlisting}
+Now when it comes to the decoder, it may interpret the last 8 bits differently and this is an issue. 
 \end{document}

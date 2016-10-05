@@ -15,7 +15,8 @@ public class AHCoder {
 	private HashMap<Integer, Node> lookup;
 	private Node root;
 	
-	private static int MAX_BUFFER_SIZE = 32;
+	private static int bit = 8;
+	private static int MAX_BUFFER_SIZE = 64;
 	
 	public AHCoder(String inputFile, String outputFile, int indexCounter) throws IOException {
 		this.in = new FileInputStream(inputFile);
@@ -23,6 +24,8 @@ public class AHCoder {
 		this.indexCounter = indexCounter;
 		this.lookup = new HashMap<Integer, Node>();
 		this.root = new Node();
+//		
+//		this.bit = 8;
 		
 		root.setIndex(this.indexCounter--);
 	}
@@ -44,26 +47,20 @@ public class AHCoder {
 			updateTree(lookup.get(c));
 			writeBuffer += code;
 
-//			System.out.println(writeBuffer + " -encode");
 			//write out in 8 bits
-			while(writeBuffer.length() >= 8) {
-				String writeOut = writeBuffer.substring(0, 8);
-				writeBuffer = writeBuffer.substring(8);
-				out.write((byte)Integer.parseInt(writeOut, 2));
+			while(writeBuffer.length() >= bit) {
+				String writeOut = writeBuffer.substring(0, bit);
+				writeBuffer = writeBuffer.substring(bit);
+				out.write(Integer.parseInt(writeOut, 2));
 			}
 		}
 		
-//		while(writeBuffer.length() >= 8) {
-//			String writeOut = writeBuffer.substring(0, 8);
-//			writeBuffer = writeBuffer.substring(8);
-//			out.write(Integer.parseInt(writeOut, 2));
-//		}
 		
 		//write rest of buffer
 		if (writeBuffer.length() > 0) {
 			
 			//fill end with 0s
-			while (writeBuffer.length() % 8 != 0) {
+			while (writeBuffer.length() % bit != 0) {
 				writeBuffer += "0";
 			}
 			out.write(Integer.parseInt(writeBuffer, 2));
@@ -74,32 +71,33 @@ public class AHCoder {
 	public void decode() throws IOException {
 		Node currentNode = root;
 		Node NYT = root;
-		int c;
+		int c = 0;
 		int ch;
 		String readBuffer = "";
-		c = in.read();
-		readBuffer += getUncompressed(c);		
+		
+		while(readBuffer.length() < MAX_BUFFER_SIZE) {
+			c = in.read();
+			readBuffer += getUncompressed(c);			
+		}
 		
 		while (c != -1 || !readBuffer.equals("")) {
-//			readBuffer += String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
-//			System.out.println(readBuffer + "  -dcode");
 			
 			//at a leaf node
 			if (currentNode.getRight() == null && currentNode.getLeft() == null) {
 				if (currentNode == NYT) {
 					
 					//read c as uncompressed
-					ch = Integer.parseInt(readBuffer.substring(0, 8), 2);
+					ch = Integer.parseInt(readBuffer.substring(0, bit), 2);
 					out.write(ch);
 
 					//insert the new symbol into the tree
 					NYT = insert(ch, NYT);
 					
-					//READ NEXT BIT
-					if (readBuffer.length() < MAX_BUFFER_SIZE && (c = in.read()) != -1) {
+					//read next byte
+					while (readBuffer.length() < MAX_BUFFER_SIZE && (c = in.read()) != -1) {
 						readBuffer += getUncompressed(c);
 					}
-					readBuffer = readBuffer.substring(8);
+					readBuffer = readBuffer.substring(bit);
 					
 				} else {
 					//output data at current leaf node
@@ -119,7 +117,7 @@ public class AHCoder {
 				
 				//read more into buffer
 				if (readBuffer.length() < MAX_BUFFER_SIZE && (c = in.read()) != -1) {
-					readBuffer += String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
+					readBuffer += String.format("%"+AHCoder.bit+"s", Integer.toBinaryString(c)).replace(' ', '0');
 				}
 			}
 		}
@@ -132,7 +130,7 @@ public class AHCoder {
 	private String buildCode(Node node) {
 		String code = "";
 		
-		//go up the tree from the symbol node
+		//go up the tree from the symbol node using the parent
 		while(node.getParent() != null) {
 			if (node.getParent().getLeft() == node) {
 				code = "0" + code;
@@ -165,7 +163,7 @@ public class AHCoder {
 	 * Returns the binary representation of 'c' in a String format.
 	 */
 	private static String getUncompressed(int c) {
-		return String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0');
+		return String.format("%"+bit+"s", Integer.toBinaryString(c)).replace(' ', '0');
 	}
 	
 	
@@ -188,13 +186,10 @@ public class AHCoder {
 		return newNYT;
 	}
 	
-	private static void swap(Node a, Node b) {
-//		System.out.println("===");
-//		traverse(root);
-//		System.out.print("\nSWAPPING ("); a.printDetails();
-//		System.out.print(") WITH ("); b.printDetails();
-//		System.out.println(")");
-		
+	/**
+	 * Swap two nodes. This function swaps the parent pointers and the indexes, not the subtrees and data.
+	 */
+	private static void swap(Node a, Node b) {		
 		if (a.getSibling() == b) {
 			if (a.getParent().getLeft() == a) {
 				a.getParent().setLeft(b);
@@ -212,9 +207,6 @@ public class AHCoder {
 		swapProperties(temp, a);
 		swapProperties(a, b);
 		swapProperties(b, temp);
-
-//		traverse(root);
-//		System.out.println("===END SWAP");
 				
 	}
 
