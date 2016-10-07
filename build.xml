@@ -1,8 +1,13 @@
 <?xml version="1.0"?>
-<project name="CS3302 P1" basedir=".">
+<project name="Main" basedir="." default="all">
+
+
 	<property name="src" location="src"/>
 	<property name="build" location="build"/>
 	<property name="dist" location="dist"/>
+
+	<target name="all" depends="init, compile, dist, clean">
+	</target>
 
 	<target name="init">
 		<mkdir dir="${build}"/>
@@ -13,8 +18,11 @@
 	</target>
 
 	<target name="dist" depends="compile">
-		<mkdir dir="${dist}/lib"/>
-		<jar jarfile="${dist}/lib/AHuffman.jar" basedir="${build}"/>
+		<jar jarfile="./AHuffman.jar" basedir="${build}">
+			<manifest>
+				<attribute name="Main-Class" value="Main" />
+			</manifest>
+		</jar>
 	</target>
 
 	<target name="clean">

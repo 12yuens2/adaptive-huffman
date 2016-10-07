@@ -5,14 +5,17 @@ import java.io.IOException;
 
 public class Main {
 	
-	public static double NANOSECONDS_IN_SECOND = 1000000000.0;
-
+	public static final double NANOSECONDS_IN_SECOND = 1000000000.0;
+	public static final String compressedFileName = "compressed.huffman";
+	
 	public static void main(String[] args) {
-
-		String originalFile = "texts/unique.txt";
 		
 		try {
-			AHCoder encoder = new AHCoder(originalFile, "compressed.huffman", 1000);
+			String originalFile = args[0];
+			String compressedFile = args[1];
+			String outputFile = args[2];
+			
+			AHCoder encoder = new AHCoder(originalFile, compressedFile, 1000);
 			
 			long encodeStartTime = System.nanoTime();
 			encoder.encode();
@@ -21,7 +24,7 @@ public class Main {
 			System.out.println("Encoding complete.");
 			System.out.println("Encode time: " + (encodeEndTime - encodeStartTime)/NANOSECONDS_IN_SECOND + " seconds");
 			
-			AHCoder decoder = new AHCoder("compressed.huffman", "decode.huffman", 1000);
+			AHCoder decoder = new AHCoder(compressedFile, outputFile, 1000);
 			
 			long decodeStartTime = System.nanoTime();
 			decoder.decode();
@@ -31,11 +34,7 @@ public class Main {
 			System.out.println("Decode time: " + (decodeEndTime - decodeStartTime)/NANOSECONDS_IN_SECOND + " seconds");
 			
 			System.out.println();
-			File original = new File(originalFile);
-			File compressed = new File("compressed.huffman");
-			System.out.println("Original size: " + original.length());
-			System.out.println("Compressed size: " + compressed.length());
-			System.out.println("Compressed: " + (0.0 + compressed.length())/(0.0 + original.length()) * 100 + "%");
+			printFileSizes(originalFile, compressedFile);
 
 		} catch (FileNotFoundException e) {
 			System.err.println("File not found.");
@@ -43,8 +42,18 @@ public class Main {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (ArrayIndexOutOfBoundsException e) {
+			System.err.println("Not enough arguments to main.");
 		}
 		
+	}
+	
+	public static void printFileSizes(String inputFile, String compressedFile) {
+		File original = new File(inputFile);
+		File compressed = new File(compressedFile);
+		System.out.println("Original size: " + original.length());
+		System.out.println("Compressed size: " + compressed.length());
+		System.out.println("Compressed: " + (0.0 + compressed.length())/(0.0 + original.length()) * 100 + "%");
 	}
 	
 }

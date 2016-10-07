@@ -1,10 +1,8 @@
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 
 
 public class AHCoder {
@@ -15,55 +13,46 @@ public class AHCoder {
 	private HashMap<Integer, Node> lookup;
 	private Node root;
 	
-	private static int bit = 8;
-	private static int MAX_BUFFER_SIZE = 64;
+	private static final int bit = 8;
+	private static final int MAX_BUFFER_SIZE = 64;
 	
 	public AHCoder(String inputFile, String outputFile, int indexCounter) throws IOException {
 		this.in = new FileInputStream(inputFile);
 		this.out = new FileOutputStream(outputFile);
 		this.indexCounter = indexCounter;
 		this.lookup = new HashMap<Integer, Node>();
-		this.root = new Node();
-//		
-//		this.bit = 8;
-		
-		root.setIndex(this.indexCounter--);
+		this.root = new Node(-1, this.indexCounter--, null);
 	}
+	
 	
 	public void encode() throws NumberFormatException, IOException {
 		Node NYT = root;
 
-		String writeBuffer = "";
+		StringBuilder writeBuffer = new StringBuilder("");
 		int c;
 		while((c = in.read()) != -1) {
-			String code = "";
-			if (lookup.containsKey(c)) {
-				code += buildCode(lookup.get(c));
-			} else {
-				code += buildCode(NYT);
-				code += getUncompressed(c);
-				NYT = insert(c, NYT);
-			}
-			updateTree(lookup.get(c));
-			writeBuffer += code;
-
-			//write out in 8 bits
-			while(writeBuffer.length() >= bit) {
-				String writeOut = writeBuffer.substring(0, bit);
-				writeBuffer = writeBuffer.substring(bit);
-				out.write(Integer.parseInt(writeOut, 2));
+			NYT = appendCode(NYT, c, writeBuffer);
+			if (writeBuffer.length() > MAX_BUFFER_SIZE) {
+				writeOut(writeBuffer);
 			}
 		}
-		
-		
+		writeOut(writeBuffer);
+
 		//write rest of buffer
 		if (writeBuffer.length() > 0) {
-			
-			//fill end with 0s
-			while (writeBuffer.length() % bit != 0) {
-				writeBuffer += "0";
+
+			//fill end with as much NYT as possible
+			char[] NYTCode = buildCode(NYT).toCharArray();
+			int i = 0;
+			while (writeBuffer.length() < bit && i < NYTCode.length) {
+				writeBuffer.append(NYTCode[i] + "");
+				i++;
 			}
-			out.write(Integer.parseInt(writeBuffer, 2));
+			//otherwise fill with 0s if there is still space
+			while(writeBuffer.length() < bit) {
+				writeBuffer.append("0");
+			}
+			out.write(Integer.parseInt(writeBuffer.toString(), 2));
 		}
 		out.flush();		
 	}
@@ -72,32 +61,38 @@ public class AHCoder {
 		Node currentNode = root;
 		Node NYT = root;
 		int c = 0;
-		int ch;
-		String readBuffer = "";
+		int ch = 0;
+		StringBuilder readBuffer = new StringBuilder("");
 		
-		while(readBuffer.length() < MAX_BUFFER_SIZE) {
+		while(c != -1 && readBuffer.length() < MAX_BUFFER_SIZE) {
 			c = in.read();
-			readBuffer += getUncompressed(c);			
+			readBuffer.append(getUncompressed(c));			
 		}
 		
-		while (c != -1 || !readBuffer.equals("")) {
-			
+		while (c != -1 || !(readBuffer.length() == 0)) {
 			//at a leaf node
 			if (currentNode.getRight() == null && currentNode.getLeft() == null) {
 				if (currentNode == NYT) {
 					
-					//read c as uncompressed
-					ch = Integer.parseInt(readBuffer.substring(0, bit), 2);
-					out.write(ch);
-
-					//insert the new symbol into the tree
-					NYT = insert(ch, NYT);
-					
-					//read next byte
-					while (readBuffer.length() < MAX_BUFFER_SIZE && (c = in.read()) != -1) {
-						readBuffer += getUncompressed(c);
+					try {
+						//read c as uncompressed
+						ch = Integer.parseInt(readBuffer.substring(0, bit), 2);
+						readBuffer.delete(0, bit);
+						
+						out.write(ch);
+						
+						//insert the new symbol into the tree
+						NYT = insert(ch, NYT);
+						
+						//read next byte
+						if (readBuffer.length() < MAX_BUFFER_SIZE && (c = in.read()) != -1) {
+							readBuffer.append(getUncompressed(c));
+						}
+						
+					} catch (StringIndexOutOfBoundsException e) {
+						//got an NYT node but couldn't get next 8 bits so we must have reached the end 
+						System.err.println("Reached end of input.");
 					}
-					readBuffer = readBuffer.substring(bit);
 					
 				} else {
 					//output data at current leaf node
@@ -113,13 +108,41 @@ public class AHCoder {
 				currentNode = (bit.equals("0")) ? currentNode.getLeft() : currentNode.getRight();
 				
 				//move buffer to next bit
-				readBuffer = readBuffer.substring(1);
+				readBuffer = readBuffer.delete(0, 1);
 				
 				//read more into buffer
 				if (readBuffer.length() < MAX_BUFFER_SIZE && (c = in.read()) != -1) {
-					readBuffer += String.format("%"+AHCoder.bit+"s", Integer.toBinaryString(c)).replace(' ', '0');
+					readBuffer.append(getUncompressed(c));
 				}
 			}
+		}
+	}
+
+	/**
+	 * Appends the codeword for the given symbol 'c' to the given 'writeBuffer' based on the code tree.
+	 * Returns the updated NYT node.
+	 */
+	private Node appendCode(Node NYT, int c, StringBuilder writeBuffer) {
+		if (lookup.containsKey(c)) {
+			writeBuffer.append(buildCode(lookup.get(c)));
+		} else {
+			writeBuffer.append(buildCode(NYT));
+			writeBuffer.append(getUncompressed(c));
+			NYT = insert(c, NYT);
+		}
+		updateTree(lookup.get(c));
+		
+		return NYT;
+	}
+	
+	/**
+	 * Writes out the buffer in 8 bit chunks
+	 */
+	private void writeOut(StringBuilder code) throws NumberFormatException, IOException {
+		while(code.length() >= bit) {
+			String writeOut = code.substring(0, bit);
+			code = code.delete(0, bit);
+			out.write(Integer.parseInt(writeOut, 2));
 		}
 	}
 	
@@ -146,7 +169,7 @@ public class AHCoder {
 	 * Recursive function that increments the weight of the given node, then calls itself with the parent until it reaches the root node.
 	 * The function also swaps nodes if necessary.
 	 */
-	private void updateTree(Node node) {
+	public void updateTree(Node node) {
 		if (node == root) {
 			node.incrementWeight();
 		} else {
@@ -203,7 +226,7 @@ public class AHCoder {
 			swapParents(b, a);
 		}
 
-		Node temp = new Node();
+		Node temp = new Node(-1, -1, null);
 		swapProperties(temp, a);
 		swapProperties(a, b);
 		swapProperties(b, temp);

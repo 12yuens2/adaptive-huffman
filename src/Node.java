@@ -1,4 +1,3 @@
-
 public class Node {
 	private Node parent;
 	private Node left;
@@ -7,17 +6,6 @@ public class Node {
 	private int index;
 	private int data;
 	
-	/**
-	 * Blank constructor for internal nodes
-	 */
-	public Node() {
-		weight = 0;
-		data = -1;
-	}
-	
-	/**
-	 * 
-	 */
 	public Node(int data, int index, Node parent) {
 		this.data = data;
 		this.index = index;
